@@ -3,6 +3,7 @@
 # Licensed under the MIT License.
 # Written by Bin Xiao (leoxiaobin@gmail.com)
 # Modified by Bowen Cheng (bcheng9@illinois.edu)
+# Modified by Jiang Du (https://github.com/jiang-du)
 # ------------------------------------------------------------------------------
 
 from __future__ import absolute_import
@@ -46,6 +47,35 @@ def add_joints(image, joints, color, dataset='COCO'):
 
     return image
 
+def add_color_joints(image, joints, color, dataset='COCO'):
+    part_idx = VIS_CONFIG[dataset]['part_idx']
+    part_orders = VIS_CONFIG[dataset]['part_orders']
+
+    def link(a, b, color):
+        if part_idx[a] < joints.shape[0] and part_idx[b] < joints.shape[0]:
+            jointa = joints[part_idx[a]]
+            jointb = joints[part_idx[b]]
+            if jointa[2] > 0 and jointb[2] > 0:
+                cv2.line(
+                    image,
+                    (int(jointa[0]), int(jointa[1])),
+                    (int(jointb[0]), int(jointb[1])),
+                    color,
+                    2
+                )
+
+    # 绘制骨架
+    # print(len(part_orders)) # 19
+    for pair in part_orders:
+        link(pair[0], pair[1], [255, 0, 255])
+
+    # 绘制关节点
+    # print(len(joints)) # 17
+    for joint in joints:
+        if joint[2] > 0:
+            cv2.circle(image, (int(joint[0]), int(joint[1])), 1, [0, 255, 0], 2)
+
+    return image
 
 def save_valid_image(image, joints, file_name, dataset='COCO'):
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -54,8 +84,25 @@ def save_valid_image(image, joints, file_name, dataset='COCO'):
         color = np.random.randint(0, 255, size=3)
         color = [int(i) for i in color]
         add_joints(image, person, color, dataset=dataset)
+        break
 
     cv2.imwrite(file_name, image)
+
+def save_demo_image(image, joints, file_name="./result.jpg", mode=0):
+    # 说明：mode=0表示image，mode=1表示video
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+    for person in joints:
+        color = np.random.randint(0, 255, size=3)
+        color = [int(i) for i in color]
+        # print(person)
+        add_color_joints(image, person, color, dataset='COCO')
+
+    # 只有单张图像需要保存成图片格式
+    if not mode:
+        cv2.imwrite(file_name, image)
+
+    return image
 
 
 def make_heatmaps(image, heatmaps):

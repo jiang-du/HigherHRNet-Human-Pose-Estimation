@@ -1,4 +1,4 @@
-EasyDict==1.7
+EasyDict
 opencv-python
 Cython
 scipy
