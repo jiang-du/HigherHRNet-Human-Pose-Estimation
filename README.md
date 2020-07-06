@@ -63,12 +63,12 @@ The code is developed using python 3.6 on Ubuntu 16.04. NVIDIA GPUs are needed. 
 
 ## Quick start
 ### Installation
-1. Install pytorch >= v1.1.0 following [official instruction](https://pytorch.org/).  
-   - **Tested with pytorch v1.4.0**
+1. Install Ubuntu 20.04 with Nvidia drivers and CUDA 10.2. Then install pytorch >= v1.1.0 following [official instruction](https://pytorch.org/) for your python.  
+   - **Tested with pytorch v1.5.0 (recommended)**
 2. Clone this repo, and we'll call the directory that you cloned as ${POSE_ROOT}.
 3. Install dependencies:
    ```
-   pip install -r requirements.txt
+   pip3 install -r requirements.txt
    ```
 4. Install [COCOAPI](https://github.com/cocodataset/cocoapi):
    ```
@@ -82,6 +82,13 @@ The code is developed using python 3.6 on Ubuntu 16.04. NVIDIA GPUs are needed. 
    python3 setup.py install --user
    ```
    Note that instructions like # COCOAPI=/path/to/install/cocoapi indicate that you should pick a path where you'd like to have the software cloned and then set an environment variable (COCOAPI in this case) accordingly.
+
+    Note: For ubuntu 20.04, you can directly run:
+
+    ```sh
+    pip3 install pycocotools
+    ```
+
 5. Install [CrowdPoseAPI](https://github.com/Jeff-sjtu/CrowdPose) exactly the same as COCOAPI.  
    - **There is a bug in the CrowdPoseAPI, please reverse https://github.com/Jeff-sjtu/CrowdPose/commit/785e70d269a554b2ba29daf137354103221f479e**
 6. Init output(training model output directory) and log(tensorboard log directory) directory:
@@ -118,6 +125,18 @@ The code is developed using python 3.6 on Ubuntu 16.04. NVIDIA GPUs are needed. 
 
    ```
    
+### Live Camera Demo
+
+If you have your USB camera on your computer, simply run:
+
+```sh
+sh demo.sh
+```
+
+Then, press "q" on your keyboard to quit.
+
+If you would like to save your video, please install `ffmpeg` for your ubuntu. Otherwise, no action is needed for the errors.
+
 ### Data preparation
 
 **For COCO data**, please download from [COCO download](http://cocodataset.org/#download), 2017 Train/Val is needed for COCO keypoints training and validation.
@@ -162,7 +181,7 @@ ${POSE_ROOT}
             |-- 100005.jpg
             |-- ... 
 ```
-After downloading data, run `python tools/crowdpose_concat_train_val.py` under `${POSE_ROOT}` to create trainval set.
+After downloading data, run `python3 tools/crowdpose_concat_train_val.py` under `${POSE_ROOT}` to create trainval set.
 
 ### Training and Testing
 
@@ -172,7 +191,7 @@ After downloading data, run `python tools/crowdpose_concat_train_val.py` under `
 For single-scale testing:
 
 ```
-python tools/valid.py \
+python3 tools/valid.py \
     --cfg experiments/coco/higher_hrnet/w32_512_adam_lr1e-3.yaml \
     TEST.MODEL_FILE models/pytorch/pose_coco/pose_higher_hrnet_w32_512.pth
 ```
@@ -180,7 +199,7 @@ python tools/valid.py \
 By default, we use horizontal flip. To test without flip:
 
 ```
-python tools/valid.py \
+python3 tools/valid.py \
     --cfg experiments/coco/higher_hrnet/w32_512_adam_lr1e-3.yaml \
     TEST.MODEL_FILE models/pytorch/pose_coco/pose_higher_hrnet_w32_512.pth \
     TEST.FLIP_TEST False
@@ -189,7 +208,7 @@ python tools/valid.py \
 Multi-scale testing is also supported, although we do not report results in our paper:
 
 ```
-python tools/valid.py \
+python3 tools/valid.py \
     --cfg experiments/coco/higher_hrnet/w32_512_adam_lr1e-3.yaml \
     TEST.MODEL_FILE models/pytorch/pose_coco/pose_higher_hrnet_w32_512.pth \
     TEST.SCALE_FACTOR '[0.5, 1.0, 2.0]'
@@ -199,14 +218,14 @@ python tools/valid.py \
 #### Training on COCO train2017 dataset
 
 ```
-python tools/dist_train.py \
+python3 tools/dist_train.py \
     --cfg experiments/coco/higher_hrnet/w32_512_adam_lr1e-3.yaml 
 ```
 
 By default, it will use all available GPUs on the machine for training. To specify GPUs, use
 
 ```
-CUDA_VISIBLE_DEVICES=0,1 python tools/dist_train.py \
+CUDA_VISIBLE_DEVICES=0,1 python3 tools/dist_train.py \
     --cfg experiments/coco/higher_hrnet/w32_512_adam_lr1e-3.yaml 
 ```
 
@@ -221,7 +240,7 @@ python tools/dist_train.py \
 #### Synchronized BatchNorm training
 If you have limited GPU memory, please try to reduce batch size and use SyncBN to train our Higher-HRNet by using the following command:
 ```
-python tools/dist_train.py \
+python3 tools/dist_train.py \
     --cfg experiments/coco/higher_hrnet/w32_512_adam_lr1e-3.yaml \
     FP16.ENABLED True FP16.DYNAMIC_LOSS_SCALE True \
     MODEL.SYNC_BN True
@@ -232,7 +251,7 @@ Our code for mixed-precision training is borrowed from [NVIDIA Apex API](https:/
 #### Training on CrowdPose trainval dataset
 
 ```
-python tools/dist_train.py \
+python3 tools/dist_train.py \
     --cfg experiments/crowd_pose/higher_hrnet/w32_512_adam_lr1e-3.yaml 
 ```
 
