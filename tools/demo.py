@@ -122,11 +122,10 @@ def main():
 
     print("Load model successfully.")
 
-    img_name = "./test.jpg"
-    video_name = "./IMG_0116.MOV"
     ENABLE_CAMERA = 1
     ENABLE_VIDEO = 1
-    VIDEO_ROTATE = 1
+
+    VIDEO_ROTATE = 0
     
     if ENABLE_CAMERA:
         # 读取视频流
@@ -135,8 +134,9 @@ def main():
         x, y = image.shape[0:2]
         print((x, y))
         # 创建视频文件
-        fourcc = cv2.VideoWriter_fourcc(*'X264')
-        out = cv2.VideoWriter('./result.mp4', fourcc, 24, (x, y), True)
+        fourcc = cv2.VideoWriter_fourcc(*'I420')
+        # fourcc = cv2.VideoWriter_fourcc(*'X264')
+        out = cv2.VideoWriter('./result.avi', fourcc, 24, (y, x), True)
         while ret:
             ret, image = cap.read()
             if not ret:
@@ -185,18 +185,20 @@ def main():
 
         cap.release()
         out.release()
+        os.system("ffmpeg -i result.avi -c:v libx265 camera.mp4")
         cv2.destroyAllWindows()
     elif ENABLE_VIDEO:
         # 读取视频流
+        video_name = "./videos/test04.mp4"
         cap = cv2.VideoCapture(video_name)
         # 创建视频文件 
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter('./result.mp4', fourcc, 24, (540, 960), True)
+        fourcc = cv2.VideoWriter_fourcc(*'I420')
+        out = cv2.VideoWriter('./result.avi', fourcc, 24, (704, 576), True)
         while cap.isOpened():
             ret, image = cap.read()
             if not ret:
                 break
-            if VIDEO_ROTATE:
+            if VIDEO_ROTATE: # 仅适用于扔实心球
                 image = cv2.resize(image, (960, 540)).transpose((1, 0, 2))
             # 实时视频自动禁用scale search
             base_size, center, scale = get_multi_scale_size(
@@ -237,12 +239,15 @@ def main():
             detection = cv2.cvtColor(detection, cv2.COLOR_BGR2RGB)
             cv2.imshow("Pose Estimation", detection)
             out.write(detection)
+            # print("frame")
             cv2.waitKey(1)
 
         cap.release()
         out.release()
+        os.system("ffmpeg -i result.avi -c:v libx265 det04.mp4")
         cv2.destroyAllWindows()
     else:
+        img_name = "./test.jpg"
         images = cv2.imread(img_name)
         image = images
         # size at scale 1.0
